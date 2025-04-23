@@ -35,18 +35,38 @@ stop_w = stopwords.words('english')
 df = pd.read_csv("model/20200325_counsel_chat.csv",encoding="utf-8")
 
 def get_embeddings(texts):
-    url = '5110e4cb8b63.ngrok.io' #will change
+    url = '127.0.0.1:8000/encode'  # Add /encode to the URL
     headers = {
-        'content-type':'application/json'
+        'content-type': 'application/json'
     }
     data = {
-        "id":123,
-        "texts":texts,
+        "id": 123,
+        "texts": texts,
         "is_tokenized": False
     }
     data = json.dumps(data)
-    r = requests.post("http://"+url+"/encode", data=data, headers=headers).json()
-    return r['result']
+    try:
+        r = requests.post("http://" + url, data=data, headers=headers)
+        print("Embedding server status:", r.status_code)
+        print("Embedding server response:", r.text)
+        r.raise_for_status()
+        # Flatten the embeddings to ensure they are 2D
+        embeddings = r.json().get('result', [])
+        return np.array(embeddings).squeeze(axis=1)  # Remove the extra dimension
+    except Exception as e:
+        print("Error in get_embeddings:", e)
+        return None
+
+def predictor(userText):
+    data = [userText]
+    x_try = pd.DataFrame(data,columns=['text'])
+    clean('text',x_try,stopwords=True)
+    for index,row in x_try.iterrows():
+        question = row['text']
+        question_embedding = get_embeddings([question])
+        if question_embedding is None:
+            return "Sorry, I couldn't process your request right now."
+        return retrieveAndPrintFAQAnswer(question_embedding,sent_bertphrase_embeddings,df)
 
 def clean(column,df,stopwords=False):
   df[column] = df[column].apply(str)
@@ -58,39 +78,33 @@ def clean(column,df,stopwords=False):
   df[column]=df[column].apply(lambda x: [item for item in x if item not in string.punctuation])
   df[column]=df[column].apply(lambda x: " ".join(x))
 
-def retrieveAndPrintFAQAnswer(question_embedding,sentence_embeddings,FAQdf): #USE BOTH QUESTION AND ANSWER EMBEDDINGS FOR CS
-    max_sim=-1
-    index_sim=-1
+def retrieveAndPrintFAQAnswer(question_embedding, sentence_embeddings, FAQdf):
+    max_sim = -1
+    index_sim = -1
     valid_ans = []
-    for index,faq_embedding in enumerate(sentence_embeddings):
-        #sim=cosine_similarity(embedding.reshape(1, -1),question_embedding.reshape(1, -1))[0][0];
-        sim=cosine_similarity(faq_embedding,question_embedding)[0][0]
-        #print(index, sim, sentences[index])
-        if sim>=max_sim:
-            max_sim=sim
-            index_sim=index
-            valid_ans.append(index_sim) #get all possible valid answers with same confidence
+    for index, faq_embedding in enumerate(sentence_embeddings):
+        sim = cosine_similarity(faq_embedding, question_embedding)[0][0]
+        print(f"Question {index}: Similarity = {sim}")  # Debug print
+        if sim >= max_sim:
+            max_sim = sim
+            index_sim = index
+            valid_ans.append(index_sim)
 
-    #Calculate answer with highest cosine similarity 
-    max_a_sim=-1
-    answer=""
+    # Calculate answer with the highest cosine similarity
+    max_a_sim = -1
+    answer = ""
     for ans in valid_ans:
-      answer_text = FAQdf.iloc[ans,8] #answer 
-      answer_em = sent_bertphrase_ans_embeddings[ans] #get embedding from index
-      similarity = cosine_similarity(answer_em,question_embedding)[0][0]
-      if similarity>max_a_sim:
-        max_a_sim = similarity
-        answer = answer_text
-    #print("\n")
-    #print("Question: ",question)
-    #print("\n");
-    #print("Retrieved: "+str(max_sim)+" ",FAQdf.iloc[index_sim,3])  # 3 is index for q text
-    #print(FAQdf.iloc[index_sim,8])    # 8 is the index for the answer text 
-    #check confidence level
-    if max_a_sim<0.70: 
-        return "Could you please elaborate your situation more? I don't really understand." 
-    return answer  
-    #print(answer)
+        answer_text = FAQdf.iloc[ans, 8]  # Answer text
+        answer_em = sent_bertphrase_ans_embeddings[ans]  # Answer embedding
+        similarity = cosine_similarity(answer_em, question_embedding)[0][0]
+        print(f"Answer {ans}: Similarity = {similarity}")  # Debug print
+        if similarity > max_a_sim:
+            max_a_sim = similarity
+            answer = answer_text
+
+    if max_a_sim == -1:  # If no valid answer is found
+        return "I'm sorry, I couldn't find an exact answer, but I'm here to help!"
+    return answer
 
 def retrieve(sent_bertphrase_embeddings,example_query): # USE ONLY QUESTION/ANSWER EMBEDDINGS CS
     max_=-1

@@ -1,21 +1,43 @@
-# Miklal - ToCareBOTYou 
-<h3>A Mental health Chatbot</h3>
+# Mental Health Chatbot
 
-The goal of this project is to be able to build a fully functional question and answering chatbot. 
-We use NLP to build a mental health chatbot based off advice and responses by verified psychologists all across the world.
-It uses BERT pre-trained word embeddings and cosine similarity to perform similarity extraction and retrieves the response. 
+## Overview
+This project is a **Mental Health Chatbot** designed to provide support and resources for individuals seeking mental health assistance. The chatbot uses natural language processing (NLP) to understand user inputs and respond empathetically.
 
-<h3>Flowchart</h3>
+## Features
+- **Conversational Interface**: Engages users in meaningful conversations.
+- **Resource Recommendations**: Suggests helpful articles, hotlines, and professional services.
+- **Anonymity**: Ensures user privacy and confidentiality.
+- **Sentiment Analysis**: Detects user emotions to provide appropriate responses.
 
-<img src="https://github.com/bhumikabhatia/mental-health-chatbot-Miklal/blob/main/static/flowchart.png" height="500" width="600">
+## Technologies Used
+- **Python**: Core programming language.
+- **TensorFlow/PyTorch**: For machine learning models.
+- **NLTK/Spacy**: For natural language processing.
+- **Flask/Django**: Backend framework for API integration.
+- **HTML/CSS/JavaScript**: Frontend for chatbot interface.
 
-<h3>Screenshots of Miklal<h3>
- 
-<img src="https://github.com/bhumikabhatia/mental-health-chatbot-Miklal/blob/main/static/ss1.jpg" height="250" width="600">
-<h6>Topic: Worthlessness</h6>
+## Installation
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/your-username/mental-health-chatbot.git
+    ```
+2. Navigate to the project directory:
+    ```bash
+    cd mental-health-chatbot
+    ```
+3. Install dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+4. Run the application:
+    ```bash
+    python app.py
+    ```
 
-<img src="https://github.com/bhumikabhatia/mental-health-chatbot-Miklal/blob/main/static/ss2.png" height="400" width="600">
-<h6>Topic: Marriage</h6>
+## Usage
+- Open the chatbot interface in your browser.
+- Start a conversation by typing your message.
+- Follow the chatbot's guidance for resources and support.
 
-<img src="https://github.com/bhumikabhatia/mental-health-chatbot-Miklal/blob/main/static/ss3.png" height="400" width="600">
-<h6>Topic: College stress</h6>
+## Contributing
+Contributions are welcome! Please fork the repository and submit a pull request.
